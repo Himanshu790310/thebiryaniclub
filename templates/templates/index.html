@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Biryani Club - Delicious Food Delivered Fast{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5" style="background: linear-gradient(135deg, #e67e22, #d35400); color: white;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    🍛 Welcome to Biryani Club
+                </h1>
+                <p class="lead mb-4">
+                    Craving authentic biryani? You're at the right place! Order delicious food with exciting rewards and fast delivery.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{{ url_for('customer.menu') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-book-open"></i> View Menu
+                    </a>
+                    <a href="{{ url_for('customer.spin_wheel') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-gift"></i> Spin for Rewards
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="hero-image">
+                    <i class="fas fa-utensils" style="font-size: 15rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Why Choose Biryani Club?</h2>
+        <div class="row">
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-card p-4 h-100 border rounded shadow-sm">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-shipping-fast text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4>Fast Delivery</h4>
+                    <p class="text-muted">Hot and fresh food delivered to your doorstep within 45 minutes</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-card p-4 h-100 border rounded shadow-sm">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-gift text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4>Exciting Rewards</h4>
+                    <p class="text-muted">Spin the wheel after delivery and win amazing discounts and free items</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-card p-4 h-100 border rounded shadow-sm">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-headset text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4>24/7 Support</h4>
+                    <p class="text-muted">Our dedicated support team is always here to help you</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Menu Preview -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <h2 class="mb-4">Our Specialties</h2>
+                <div class="menu-preview">
+                    {% for category, items in menu.items() %}
+                        <div class="category-preview mb-4">
+                            <h4 class="text-primary">{{ category }}</h4>
+                            {% for item in items[:2] %}  {# Show only first 2 items from each category #}
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <div>
+                                        <span class="me-2">{{ item.emoji }}</span>
+                                        <strong>{{ item.name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ item.description }}</small>
+                                    </div>
+                                    <span class="text-primary fw-bold">₹{{ item.price }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('customer.menu') }}" class="btn btn-primary">
+                    View Full Menu <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="col-lg-6">
+                <div class="order-card p-4 bg-white rounded shadow">
+                    <h3 class="mb-4">Quick Order</h3>
+                    <form id="quick-order-form">
+                        <div class="mb-3">
+                            <label class="form-label">Your Name *</label>
+                            <input type="text" class="form-control" name="customer_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="tel" class="form-control" name="customer_phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Delivery Address *</label>
+                            <textarea class="form-control" name="customer_address" rows="3" required></textarea>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('customer.menu') }}" class="btn btn-primary flex-fill">
+                                <i class="fas fa-plus"></i> Add Items
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#track-order-modal">
+                                <i class="fas fa-search"></i> Track Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 mx-auto text-center">
+                <h2 class="mb-4">Need Help?</h2>
+                <p class="lead mb-4">Our customer support team is ready to assist you!</p>
+                <div class="contact-options d-flex justify-content-center gap-4 flex-wrap">
+                    <a href="tel:{{ support_phone }}" class="btn btn-success btn-lg">
+                        <i class="fas fa-phone"></i> Call {{ support_phone }}
+                    </a>
+                    <a href="{{ url_for('support.contact') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-envelope"></i> Create Support Ticket
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Admin/Delivery Login Section -->
+<section class="py-3 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('admin.login') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-user-shield"></i> Admin Login
+                    </a>
+                    <a href="{{ url_for('delivery.login') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-motorcycle"></i> Delivery Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Track Order Modal -->
+<div class="modal fade" id="track-order-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Track Your Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Enter Order ID</label>
+                    <input type="text" class="form-control" id="track-order-id" placeholder="BC123456">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="trackOrder(document.getElementById('track-order-id').value)">
+                    Track Order
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Status Modal -->
+<div class="modal fade" id="order-status-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Order Status</h5>
+                <button type="button" class="btn-close modal-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="order-info mb-4">
+                    <h6>Order ID: <span id="status-order-id"></span></h6>
+                    <p>Customer: <span id="status-customer-name"></span></p>
+                    <p>Total: <span id="status-total"></span></p>
+                    <p>Status: <strong id="status-current"></strong></p>
+                </div>
+                
+                <div class="order-timeline" id="order-timeline">
+                    <div class="timeline-item">
+                        <h6>Order Received</h6>
+                        <small class="text-muted">Your order has been received and is being processed</small>
+                    </div>
+                    <div class="timeline-item">
+                        <h6>Confirmed</h6>
+                        <small class="text-muted">Order confirmed and kitchen preparation started</small>
+                    </div>
+                    <div class="timeline-item">
+                        <h6>Being Prepared</h6>
+                        <small class="text-muted">Your delicious food is being prepared</small>
+                    </div>
+                    <div class="timeline-item">
+                        <h6>Out for Delivery</h6>
+                        <small class="text-muted">Order is on the way to your location</small>
+                    </div>
+                    <div class="timeline-item">
+                        <h6>Delivered</h6>
+                        <small class="text-muted">Order delivered successfully</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

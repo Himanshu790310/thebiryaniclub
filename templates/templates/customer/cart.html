@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Your Cart - Biryani Club{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-shopping-cart"></i> Your Cart</h4>
+                </div>
+                <div class="card-body">
+                    <div id="cart-items-container">
+                        {% if cart_items %}
+                            {% for item in cart_items %}
+                            <div class="cart-item" data-cart-item="{{ item.name }}">
+                                <div class="cart-item-emoji">{{ item.emoji }}</div>
+                                <div class="cart-item-info flex-grow-1">
+                                    <div class="cart-item-name">{{ item.name }}</div>
+                                    <div class="cart-item-price">₹{{ item.price }} each</div>
+                                    <small class="text-muted">{{ item.description }}</small>
+                                </div>
+                                <div class="quantity-controls">
+                                    <button class="quantity-btn quantity-decrease" data-item="{{ item.name }}">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span class="quantity-display mx-2">{{ item.quantity }}</span>
+                                    <button class="quantity-btn quantity-increase" data-item="{{ item.name }}">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div class="cart-item-total ms-3">
+                                    <strong>₹{{ item.price * item.quantity }}</strong>
+                                </div>
+                                <button class="btn btn-outline-danger btn-sm ms-2 remove-from-cart" data-item="{{ item.name }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-cart text-center py-5">
+                                <i class="fas fa-shopping-cart text-muted" style="font-size: 4rem;"></i>
+                                <h4 class="mt-3 text-muted">Your cart is empty</h4>
+                                <p class="text-muted">Add some delicious items from our menu!</p>
+                                <a href="{{ url_for('customer.menu') }}" class="btn btn-primary">
+                                    <i class="fas fa-utensils"></i> Browse Menu
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommended Items -->
+            {% if cart_items %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-star text-warning"></i> You might also like</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="mb-2">🥤</div>
+                                <strong>Soft Drink</strong><br>
+                                <small class="text-muted">₹35</small><br>
+                                <button class="btn btn-outline-primary btn-sm mt-1 add-to-cart" data-item="Soft Drink (500 ml)">Add</button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="mb-2">🥣</div>
+                                <strong>Extra Raita</strong><br>
+                                <small class="text-muted">₹10</small><br>
+                                <button class="btn btn-outline-primary btn-sm mt-1 add-to-cart" data-item="Extra Raita">Add</button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center">
+                                <div class="mb-2">🍼</div>
+                                <strong>Extra Gravy</strong><br>
+                                <small class="text-muted">₹10</small><br>
+                                <button class="btn btn-outline-primary btn-sm mt-1 add-to-cart" data-item="Extra Gravy (Salan)">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Order Summary Sidebar -->
+        <div class="col-lg-4">
+            {% if cart_items %}
+            <div class="card sticky-top" style="top: 2rem;">
+                <div class="card-header">
+                    <h5><i class="fas fa-receipt"></i> Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Items Summary -->
+                    <div class="mb-3">
+                        {% set total_items = cart_items | sum(attribute='quantity') %}
+                        {% set subtotal = cart_items | sum(attribute='price', start=0) %}
+                        <div class="d-flex justify-content-between">
+                            <span>Items ({{ total_items }})</span>
+                            <span id="cart-subtotal">₹{{ subtotal }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Coupon Section -->
+                    <div class="mb-3">
+                        <label class="form-label">Coupon Code</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="coupon-code" placeholder="Enter coupon code">
+                            <button class="btn btn-outline-secondary" onclick="validateCoupon()">Apply</button>
+                        </div>
+                        <div id="coupon-feedback" class="mt-1"></div>
+                    </div>
+
+                    <!-- Total -->
+                    <hr>
+                    <div class="h5 d-flex justify-content-between">
+                        <span>Total:</span>
+                        <span id="cart-total" class="text-success">₹{{ subtotal }}</span>
+                    </div>
+
+                    <!-- Checkout Button -->
+                    <div class="d-grid">
+                        <a href="{{ url_for('customer.checkout') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-credit-card"></i> Proceed to Checkout
+                        </a>
+                    </div>
+
+                    <!-- Delivery Info -->
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-truck"></i> Estimated delivery: 30-45 minutes<br>
+                            <i class="fas fa-shield-alt"></i> Safe and contactless delivery
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Support Card -->
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h6><i class="fas fa-headset"></i> Need Help?</h6>
+                    <p class="text-muted mb-3">Our support team is here to assist you</p>
+                    <div class="d-grid gap-2">
+                        <a href="tel:{{ support_phone or '9241169665' }}" class="btn btn-success">
+                            <i class="fas fa-phone"></i> Call Support
+                        </a>
+                        <a href="{{ url_for('support.contact') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-ticket-alt"></i> Create Ticket
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Quantity controls
+    document.querySelectorAll('.quantity-increase').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemName = this.getAttribute('data-item');
+            addToCart(itemName);
+        });
+    });
+
+    document.querySelectorAll('.quantity-decrease').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemName = this.getAttribute('data-item');
+            decreaseQuantity(itemName);
+        });
+    });
+
+    // Remove from cart
+    document.querySelectorAll('.remove-from-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemName = this.getAttribute('data-item');
+            removeFromCart(itemName);
+        });
+    });
+
+    // Recommended items
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemName = this.getAttribute('data-item');
+            addToCart(itemName);
+        });
+    });
+});
+
+function decreaseQuantity(itemName) {
+    const cartItem = document.querySelector(`[data-cart-item="${itemName}"]`);
+    const quantityDisplay = cartItem.querySelector('.quantity-display');
+    const currentQuantity = parseInt(quantityDisplay.textContent);
+    
+    if (currentQuantity <= 1) {
+        removeFromCart(itemName);
+        return;
+    }
+    
+    // This is a simplified approach - in a real app, you'd want to make an API call
+    quantityDisplay.textContent = currentQuantity - 1;
+    updateCartTotals();
+}
+
+function updateCartTotals() {
+    let subtotal = 0;
+    document.querySelectorAll('.cart-item').forEach(item => {
+        const priceElement = item.querySelector('.cart-item-price');
+        const quantityElement = item.querySelector('.quantity-display');
+        const totalElement = item.querySelector('.cart-item-total strong');
+        
+        const price = parseFloat(priceElement.textContent.replace('₹', '').replace(' each', ''));
+        const quantity = parseInt(quantityElement.textContent);
+        const itemTotal = price * quantity;
+        
+        totalElement.textContent = `₹${itemTotal}`;
+        subtotal += itemTotal;
+    });
+    
+    document.getElementById('cart-subtotal').textContent = `₹${subtotal}`;
+    document.getElementById('cart-total').textContent = `₹${subtotal}`;
+}
+
+// Enhanced remove from cart with confirmation
+function removeFromCart(itemName) {
+    if (confirm(`Remove ${itemName} from cart?`)) {
+        fetch('/customer/remove_from_cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ item_name: itemName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove item from DOM
+                const cartItem = document.querySelector(`[data-cart-item="${itemName}"]`);
+                if (cartItem) {
+                    cartItem.remove();
+                }
+                
+                // Update cart counter
+                updateCartCounter(data.cart_count);
+                
+                // Check if cart is empty
+                const remainingItems = document.querySelectorAll('.cart-item');
+                if (remainingItems.length === 0) {
+                    document.getElementById('cart-items-container').innerHTML = `
+                        <div class="empty-cart text-center py-5">
+                            <i class="fas fa-shopping-cart text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3 text-muted">Your cart is empty</h4>
+                            <p class="text-muted">Add some delicious items from our menu!</p>
+                            <a href="${'{{ url_for("customer.menu") }}'}" class="btn btn-primary">
+                                <i class="fas fa-utensils"></i> Browse Menu
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    updateCartTotals();
+                }
+                
+                showNotification('Item removed from cart', 'info');
+            } else {
+                showNotification(data.error || 'Failed to remove item', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Failed to remove item', 'error');
+        });
+    }
+}
+</script>
+{% endblock %}

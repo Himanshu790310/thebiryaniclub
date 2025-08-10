@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Menu - Biryani Club{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-5 mb-3">🍛 Our Delicious Menu</h1>
+            <p class="lead text-muted">Fresh ingredients, authentic flavors, delivered hot!</p>
+        </div>
+    </div>
+
+    <!-- Cart Summary (Floating) -->
+    <div class="cart-summary position-fixed bottom-0 start-50 translate-middle-x" style="z-index: 1000;">
+        <div class="card shadow-lg" id="cart-summary" style="display: none;">
+            <div class="card-body text-center">
+                <div id="cart-items-count">0 items</div>
+                <div class="h5 text-success" id="cart-subtotal">₹0</div>
+                <a href="{{ url_for('customer.cart') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-shopping-cart"></i> View Cart
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Categories -->
+    {% for category, items in menu.items() %}
+    <div class="menu-category mb-5">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="category-title text-primary border-bottom pb-2 mb-4">
+                    {{ category }}
+                    <small class="text-muted">({{ items|length }} items)</small>
+                </h2>
+            </div>
+        </div>
+        
+        <div class="menu-items">
+            {% for item in items %}
+            <div class="menu-item" data-category="{{ item.category }}">
+                <div class="menu-item-emoji">{{ item.emoji }}</div>
+                <div class="menu-item-info">
+                    <div class="menu-item-name">{{ item.name }}</div>
+                    <div class="menu-item-description">{{ item.description }}</div>
+                    <div class="menu-item-price">₹{{ item.price }}</div>
+                    <div class="menu-item-category">
+                        <span class="badge bg-{{ 'success' if item.category == 'vegetarian' else 'warning' if item.category == 'egg' else 'danger' if item.category == 'non-vegetarian' else 'info' }}">
+                            {{ item.category.replace('_', ' ')|title }}
+                        </span>
+                    </div>
+                </div>
+                <div class="menu-item-actions">
+                    <button class="btn btn-primary add-to-cart" data-item="{{ item.name }}">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Quick Order CTA -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-primary text-white text-center">
+                <div class="card-body">
+                    <h4>Ready to Order?</h4>
+                    <p class="mb-3">Add items to your cart and proceed to checkout</p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="{{ url_for('customer.cart') }}" class="btn btn-light">
+                            <i class="fas fa-shopping-cart"></i> View Cart
+                        </a>
+                        <a href="{{ url_for('customer.spin_wheel') }}" class="btn btn-outline-light">
+                            <i class="fas fa-gift"></i> Spin for Rewards
+                        </a>
+                        <a href="{{ url_for('support.contact') }}" class="btn btn-outline-light">
+                            <i class="fas fa-headset"></i> Need Help?
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Item Added Modal -->
+<div class="modal fade" id="item-added-modal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Item Added!</h5>
+                <p class="text-muted" id="added-item-name"></p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" data-bs-dismiss="modal">Continue Shopping</button>
+                    <a href="{{ url_for('customer.cart') }}" class="btn btn-outline-primary">View Cart</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartSummaryDisplay();
+    
+    // Add to cart functionality
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemName = this.getAttribute('data-item');
+            const originalText = this.innerHTML;
+            
+            // Show loading state
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+            this.disabled = true;
+            
+            fetch('/customer/add_to_cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ item_name: itemName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                this.innerHTML = originalText;
+                this.disabled = false;
+                
+                if (data.success) {
+                    // Update cart counter and summary
+                    updateCartCounter(data.cart_count);
+                    updateCartSummary(data.cart_count, data.subtotal);
+                    
+                    // Show success modal
+                    document.getElementById('added-item-name').textContent = itemName;
+                    const modal = new bootstrap.Modal(document.getElementById('item-added-modal'));
+                    modal.show();
+                    
+                    // Brief success animation on button
+                    this.classList.add('btn-success');
+                    this.innerHTML = '<i class="fas fa-check"></i> Added!';
+                    setTimeout(() => {
+                        this.classList.remove('btn-success');
+                        this.classList.add('btn-primary');
+                        this.innerHTML = originalText;
+                    }, 1500);
+                } else {
+                    showNotification(data.error || 'Failed to add item to cart', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.innerHTML = originalText;
+                this.disabled = false;
+                showNotification('Failed to add item to cart', 'error');
+            });
+        });
+    });
+});
+
+function updateCartSummary(itemCount, subtotal) {
+    const cartSummary = document.getElementById('cart-summary');
+    const itemsCount = document.getElementById('cart-items-count');
+    const cartSubtotal = document.getElementById('cart-subtotal');
+    
+    if (itemCount > 0) {
+        itemsCount.textContent = `${itemCount} item${itemCount > 1 ? 's' : ''}`;
+        cartSubtotal.textContent = `₹${subtotal}`;
+        cartSummary.style.display = 'block';
+    } else {
+        cartSummary.style.display = 'none';
+    }
+}
+
+function updateCartSummaryDisplay() {
+    // This would typically fetch cart data from server
+    // For now, we'll just ensure proper display
+    const cartCounter = document.getElementById('cart-counter');
+    const count = cartCounter ? parseInt(cartCounter.textContent) : 0;
+    if (count > 0) {
+        updateCartSummary(count, 0); // You might want to fetch actual subtotal
+    }
+}
+
+// Smooth scrolling for category navigation
+function scrollToCategory(category) {
+    const element = document.querySelector(`[data-category="${category}"]`).closest('.menu-category');
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// Filter by dietary preference
+function filterByDiet(preference) {
+    const items = document.querySelectorAll('.menu-item');
+    items.forEach(item => {
+        if (preference === 'all' || item.dataset.category === preference) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Add floating cart summary styles
+const style = document.createElement('style');
+style.textContent = `
+    .cart-summary {
+        width: 200px;
+        margin-bottom: 20px;
+    }
+    
+    .cart-summary .card {
+        border: none;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+        color: white;
+    }
+    
+    .cart-summary .card-body {
+        padding: 1rem;
+    }
+    
+    .cart-summary .btn {
+        margin-top: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .cart-summary {
+            width: 90%;
+            max-width: 300px;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

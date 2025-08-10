@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Delivery Login - Biryani Club{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-motorcycle text-warning" style="font-size: 3rem;"></i>
+                        <h3 class="mt-3">Delivery Login</h3>
+                        <p class="text-muted">Access your delivery dashboard</p>
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user me-1"></i> Username
+                            </label>
+                            <input type="text" class="form-control" id="username" name="username" required autofocus>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-1"></i> Password
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-warning btn-lg text-dark">
+                                <i class="fas fa-sign-in-alt me-2"></i> Login
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-truck"></i> Delivery staff access only
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Info Panel -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6><i class="fas fa-info-circle text-primary"></i> Delivery Information</h6>
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-clock text-success" style="font-size: 2rem;"></i>
+                            <p class="mt-2 mb-0"><strong>Operating Hours</strong></p>
+                            <small class="text-muted">11:00 AM - 11:00 PM</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-map-marked-alt text-warning" style="font-size: 2rem;"></i>
+                            <p class="mt-2 mb-0"><strong>Delivery Area</strong></p>
+                            <small class="text-muted">Within 10km radius</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-headset text-info" style="font-size: 2rem;"></i>
+                            <p class="mt-2 mb-0"><strong>Support</strong></p>
+                            <small class="text-muted">Call {{ support_phone or '9241169665' }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

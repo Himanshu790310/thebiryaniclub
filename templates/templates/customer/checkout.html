@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - Biryani Club{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Checkout Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-credit-card"></i> Checkout</h4>
+                </div>
+                <div class="card-body">
+                    <form id="order-form">
+                        <!-- Customer Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="mb-3"><i class="fas fa-user"></i> Customer Information</h5>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="customer_name" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="customer_name" name="customer_name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="customer_phone" class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="customer_phone" name="customer_phone" required pattern="[0-9]{10}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Address -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-map-marker-alt"></i> Delivery Address</h5>
+                            <div class="form-group">
+                                <label for="customer_address" class="form-label">Complete Address *</label>
+                                <textarea class="form-control" id="customer_address" name="customer_address" rows="3" required placeholder="House/Flat No., Street, Area, Landmark, City, PIN Code"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Coupon Code -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-ticket-alt"></i> Coupon Code (Optional)</h5>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="coupon_code" name="coupon_code" placeholder="Enter coupon code">
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-outline-primary w-100" onclick="validateCoupon()">
+                                        <i class="fas fa-check"></i> Apply
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="coupon-feedback" class="mt-2"></div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-credit-card"></i> Payment Method</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash" checked>
+                                        <label class="form-check-label" for="cash">
+                                            <i class="fas fa-money-bill-wave text-success"></i> Cash on Delivery
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="upi" value="upi">
+                                        <label class="form-check-label" for="upi">
+                                            <i class="fas fa-mobile-alt text-primary"></i> UPI Payment
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- UPI Details (hidden by default) -->
+                            <div id="upi-details" class="mt-3" style="display: none;">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle"></i> UPI Payment Details</h6>
+                                    <p class="mb-2">Pay to UPI ID: <strong>{{ upi_id }}</strong></p>
+                                    <p class="mb-0">Send payment and share screenshot with delivery person</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Special Instructions -->
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="fas fa-sticky-note"></i> Special Instructions (Optional)</h5>
+                            <textarea class="form-control" name="notes" rows="2" placeholder="Any special requests or delivery instructions..."></textarea>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" class="text-primary">Terms and Conditions</a> and <a href="#" class="text-primary">Privacy Policy</a>
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 2rem;">
+                <div class="card-header">
+                    <h5><i class="fas fa-receipt"></i> Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Items -->
+                    <div class="order-items mb-3">
+                        {% set subtotal = 0 %}
+                        {% for item in cart %}
+                            {% set item_total = item.price * item.quantity %}
+                            {% set subtotal = subtotal + item_total %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <span>{{ item.emoji }} {{ item.name }}</span>
+                                    <br><small class="text-muted">₹{{ item.price }} × {{ item.quantity }}</small>
+                                </div>
+                                <strong>₹{{ item_total }}</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <hr>
+
+                    <!-- Pricing Breakdown -->
+                    <div class="pricing-breakdown">
+                        <div class="d-flex justify-content-between">
+                            <span>Subtotal:</span>
+                            <span id="checkout-subtotal">₹{{ subtotal }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between" id="discount-row" style="display: none;">
+                            <span>Discount:</span>
+                            <span class="text-success" id="discount-amount">₹0</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Delivery:</span>
+                            <span class="text-success">FREE</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between h5">
+                            <strong>Total:</strong>
+                            <strong class="text-success" id="checkout-total">₹{{ subtotal }}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Place Order Button -->
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-primary btn-lg" onclick="placeOrder(event)">
+                            <i class="fas fa-check-circle"></i> Place Order
+                        </button>
+                    </div>
+
+                    <!-- Estimated Delivery -->
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Estimated delivery: 30-45 minutes<br>
+                            <i class="fas fa-shield-alt"></i> Safe and contactless delivery
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Success Modal -->
+<div class="modal fade" id="order-success-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-check-circle"></i> Order Placed Successfully!</h5>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    <h3 class="mt-3">Thank You!</h3>
+                    <p class="text-muted">Your order has been placed successfully</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6>Order Details</h6>
+                                <p><strong>Order ID:</strong> <span id="order-id-display" class="text-primary"></span></p>
+                                <p><strong>Total:</strong> <span id="order-total-display" class="text-success"></span></p>
+                                <p><strong>ETA:</strong> <span id="estimated-delivery"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6>Order QR Code</h6>
+                                <div id="order-qr-code"></div>
+                                <small class="text-muted">Save this QR code for order tracking</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Go to Home
+                        </a>
+                        <button class="btn btn-outline-primary" onclick="trackMyOrder()">
+                            <i class="fas fa-search"></i> Track Order
+                        </button>
+                        <a href="{{ url_for('customer.menu') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-utensils"></i> Order More
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle UPI details based on payment method selection
+    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const upiDetails = document.getElementById('upi-details');
+            if (this.value === 'upi') {
+                upiDetails.style.display = 'block';
+            } else {
+                upiDetails.style.display = 'none';
+            }
+        });
+    });
+});
+
+function placeOrder(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('order-form');
+    const formData = new FormData(form);
+    
+    // Validate required fields
+    const requiredFields = ['customer_name', 'customer_phone', 'customer_address'];
+    for (let field of requiredFields) {
+        if (!formData.get(field)) {
+            showNotification(`Please fill in ${field.replace('_', ' ')}`, 'error');
+            document.querySelector(`[name="${field}"]`).focus();
+            return;
+        }
+    }
+    
+    // Validate phone number
+    const phone = formData.get('customer_phone');
+    if (!/^[0-9]{10}$/.test(phone)) {
+        showNotification('Please enter a valid 10-digit phone number', 'error');
+        document.querySelector('[name="customer_phone"]').focus();
+        return;
+    }
+    
+    // Check terms acceptance
+    if (!document.getElementById('terms').checked) {
+        showNotification('Please accept the terms and conditions', 'error');
+        return;
+    }
+    
+    const orderData = {
+        customer_name: formData.get('customer_name'),
+        customer_phone: formData.get('customer_phone'),
+        customer_address: formData.get('customer_address'),
+        payment_method: formData.get('payment_method') || 'cash',
+        coupon_code: formData.get('coupon_code') || '',
+        notes: formData.get('notes') || ''
+    };
+    
+    showLoading();
+    
+    fetch('/customer/place_order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showOrderSuccess(data);
+        } else {
+            showNotification(data.error || 'Failed to place order', 'error');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        console.error('Error:', error);
+        showNotification('Failed to place order. Please try again.', 'error');
+    });
+}
+
+function showOrderSuccess(data) {
+    // Populate modal with order details
+    document.getElementById('order-id-display').textContent = data.order_id;
+    document.getElementById('order-total-display').textContent = `₹${data.total}`;
+    document.getElementById('estimated-delivery').textContent = `${data.estimated_delivery} minutes`;
+    document.getElementById('order-qr-code').innerHTML = `<img src="data:image/png;base64,${data.qr_code}" alt="QR Code" style="max-width: 150px;">`;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('order-success-modal'));
+    modal.show();
+    
+    // Store order ID for tracking
+    sessionStorage.setItem('last_order_id', data.order_id);
+}
+
+function trackMyOrder() {
+    const orderId = document.getElementById('order-id-display').textContent;
+    if (orderId) {
+        window.open(`{{ url_for('customer.track_order', order_id='ORDER_ID') }}`.replace('ORDER_ID', orderId), '_blank');
+    }
+}
+
+// Coupon validation with visual feedback
+function validateCoupon() {
+    const couponInput = document.getElementById('coupon_code');
+    const couponCode = couponInput.value.trim().toUpperCase();
+    
+    if (!couponCode) {
+        showNotification('Please enter a coupon code', 'warning');
+        return;
+    }
+    
+    couponInput.disabled = true;
+    document.querySelector('button[onclick="validateCoupon()"]').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+    
+    fetch('/api/check_coupon', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ coupon_code: couponCode })
+    })
+    .then(response => response.json())
+    .then(data => {
+        couponInput.disabled = false;
+        document.querySelector('button[onclick="validateCoupon()"]').innerHTML = '<i class="fas fa-check"></i> Apply';
+        
+        if (data.valid) {
+            showCouponValid(data.reward_name, data.effect);
+            applyCouponDiscount(data.effect);
+            couponInput.value = couponCode; // Ensure uppercase
+        } else {
+            showCouponInvalid(data.message);
+            removeCouponDiscount();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        couponInput.disabled = false;
+        document.querySelector('button[onclick="validateCoupon()"]').innerHTML = '<i class="fas fa-check"></i> Apply';
+        showNotification('Error validating coupon', 'error');
+    });
+}
+
+function showCouponValid(rewardName, effect) {
+    let discountText = '';
+    if (effect.discount) {
+        discountText = ` (₹${effect.discount} off)`;
+    } else if (effect.item) {
+        discountText = ` (Free ${effect.item})`;
+    }
+    
+    const feedback = document.getElementById('coupon-feedback');
+    feedback.innerHTML = `
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> Valid coupon: ${rewardName}${discountText}
+        </div>
+    `;
+}
+
+function showCouponInvalid(message) {
+    const feedback = document.getElementById('coupon-feedback');
+    feedback.innerHTML = `
+        <div class="alert alert-danger">
+            <i class="fas fa-times-circle"></i> ${message}
+        </div>
+    `;
+}
+
+function applyCouponDiscount(effect) {
+    const subtotalElement = document.getElementById('checkout-subtotal');
+    const totalElement = document.getElementById('checkout-total');
+    const discountRow = document.getElementById('discount-row');
+    const discountAmount = document.getElementById('discount-amount');
+    
+    const subtotal = parseFloat(subtotalElement.textContent.replace('₹', ''));
+    let discount = 0;
+    
+    if (effect.discount) {
+        discount = Math.min(effect.discount, subtotal);
+        discountAmount.textContent = `-₹${discount}`;
+        discountRow.style.display = 'flex';
+    }
+    
+    const total = Math.max(0, subtotal - discount);
+    totalElement.textContent = `₹${total}`;
+}
+
+function removeCouponDiscount() {
+    const subtotalElement = document.getElementById('checkout-subtotal');
+    const totalElement = document.getElementById('checkout-total');
+    const discountRow = document.getElementById('discount-row');
+    
+    const subtotal = parseFloat(subtotalElement.textContent.replace('₹', ''));
+    totalElement.textContent = `₹${subtotal}`;
+    discountRow.style.display = 'none';
+}
+
+// Auto-format phone number as user types
+document.getElementById('customer_phone').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 10);
+});
+
+// Save form data to localStorage on input (for user convenience)
+document.querySelectorAll('#order-form input, #order-form textarea').forEach(input => {
+    input.addEventListener('input', function() {
+        localStorage.setItem(`checkout_${this.name}`, this.value);
+    });
+    
+    // Load saved data
+    const savedValue = localStorage.getItem(`checkout_${input.name}`);
+    if (savedValue && !input.value) {
+        input.value = savedValue;
+    }
+});
+
+// Clear saved data after successful order
+function clearSavedCheckoutData() {
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+        if (key.startsWith('checkout_')) {
+            localStorage.removeItem(key);
+        }
+    });
+}
+</script>
+{% endblock %}

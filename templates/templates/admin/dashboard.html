@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Biryani Club{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h2>
+                <div class="btn-group">
+                    <a href="{{ url_for('admin.orders') }}" class="btn btn-primary">
+                        <i class="fas fa-shopping-bag"></i> Manage Orders
+                    </a>
+                    <a href="{{ url_for('admin.support_tickets') }}" class="btn btn-warning">
+                        <i class="fas fa-ticket-alt"></i> Support Tickets
+                    </a>
+                    <a href="{{ url_for('main.logout') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid mb-5">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_orders }}</div>
+            <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.pending_orders }}</div>
+            <div class="stat-label">Pending Orders</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.delivered_orders }}</div>
+            <div class="stat-label">Delivered Orders</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">₹{{ "%.2f"|format(stats.total_revenue) }}</div>
+            <div class="stat-label">Total Revenue</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.open_tickets }}</div>
+            <div class="stat-label">Open Tickets</div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-clock"></i> Recent Orders</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in recent_orders %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ order.order_id }}</strong>
+                                        </td>
+                                        <td>
+                                            {{ order.customer_name }}<br>
+                                            <small class="text-muted">{{ order.customer_phone }}</small>
+                                        </td>
+                                        <td>
+                                            {% set items = order.get_items() %}
+                                            {{ items|length }} items<br>
+                                            <small class="text-muted">{{ items[0].name if items else 'No items' }}{% if items|length > 1 %} +{{ items|length - 1 }} more{% endif %}</small>
+                                        </td>
+                                        <td>
+                                            <strong class="text-primary">₹{{ order.total }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{{ 'success' if order.status == 'delivered' else 'warning' if order.status in ['pending', 'confirmed'] else 'primary' }}">
+                                                {{ order.get_status_display() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small>{{ order.created_at.strftime('%d/%m %H:%M') }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <select class="form-select form-select-sm" onchange="updateOrderStatus('{{ order.order_id }}', this.value)">
+                                                    <option value="">Change Status</option>
+                                                    <option value="pending" {{ 'selected' if order.status == 'pending' else '' }}>Pending</option>
+                                                    <option value="confirmed" {{ 'selected' if order.status == 'confirmed' else '' }}>Confirmed</option>
+                                                    <option value="preparing" {{ 'selected' if order.status == 'preparing' else '' }}>Preparing</option>
+                                                    <option value="out_for_delivery" {{ 'selected' if order.status == 'out_for_delivery' else '' }}>Out for Delivery</option>
+                                                    <option value="delivered" {{ 'selected' if order.status == 'delivered' else '' }}>Delivered</option>
+                                                    <option value="cancelled" {{ 'selected' if order.status == 'cancelled' else '' }}>Cancelled</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-shopping-bag text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-3">No recent orders found</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Status Update Modal -->
+<div class="modal fade" id="delivery-assign-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign Delivery Person</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Select Delivery Person</label>
+                    <select class="form-select" id="delivery-person-select">
+                        <option value="">Select delivery person...</option>
+                        <!-- Delivery persons would be loaded here -->
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmDeliveryAssignment()">Assign</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateOrderStatus(orderId, newStatus) {
+    if (!newStatus) return;
+    
+    if (newStatus === 'out_for_delivery') {
+        // Show delivery person assignment modal
+        document.getElementById('current-order-id').value = orderId;
+        document.getElementById('current-status').value = newStatus;
+        const modal = new bootstrap.Modal(document.getElementById('delivery-assign-modal'));
+        modal.show();
+        return;
+    }
+    
+    fetch('/admin/update_order_status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            order_id: orderId,
+            status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Order status updated successfully', 'success');
+            location.reload();
+        } else {
+            showNotification(data.error || 'Failed to update order status', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Failed to update order status', 'error');
+    });
+}
+
+function confirmDeliveryAssignment() {
+    const orderId = document.getElementById('current-order-id').value;
+    const status = document.getElementById('current-status').value;
+    const deliveryPersonId = document.getElementById('delivery-person-select').value;
+    
+    fetch('/admin/update_order_status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            order_id: orderId,
+            status: status,
+            delivery_person_id: deliveryPersonId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Order assigned successfully', 'success');
+            location.reload();
+        } else {
+            showNotification(data.error || 'Failed to assign order', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Failed to assign order', 'error');
+    });
+}
+
+// Auto refresh every 30 seconds
+setInterval(() => {
+    location.reload();
+}, 30000);
+</script>
+
+<!-- Hidden inputs for modal -->
+<input type="hidden" id="current-order-id">
+<input type="hidden" id="current-status">
+{% endblock %}

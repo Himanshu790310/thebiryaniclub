@@ -1,0 +1,465 @@
+<!-- Global Notification Component -->
+<div id="notification-container" class="notification-container"></div>
+
+<style>
+.notification-container {
+    position: fixed;
+    top: 80px; /* Below header */
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+    pointer-events: none; /* Allow clicks through container */
+}
+
+.notification {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    margin-bottom: 12px;
+    overflow: hidden;
+    border-left: 5px solid;
+    animation: slideInRight 0.3s ease-out;
+    pointer-events: auto; /* Allow interaction with notifications */
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+.notification-success { 
+    border-left-color: #28a745;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.notification-error { 
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+}
+
+.notification-warning { 
+    border-left-color: #ffc107;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+}
+
+.notification-info { 
+    border-left-color: #17a2b8;
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+}
+
+.notification-content {
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.notification-icon {
+    font-size: 20px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.notification-success .notification-icon { color: #155724; }
+.notification-error .notification-icon { color: #721c24; }
+.notification-warning .notification-icon { color: #856404; }
+.notification-info .notification-icon { color: #0c5460; }
+
+.notification-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.notification-success .notification-title { color: #155724; }
+.notification-error .notification-title { color: #721c24; }
+.notification-warning .notification-title { color: #856404; }
+.notification-info .notification-title { color: #0c5460; }
+
+.notification-message {
+    font-size: 13px;
+    line-height: 1.4;
+    opacity: 0.9;
+}
+
+.notification-success .notification-message { color: #155724; }
+.notification-error .notification-message { color: #721c24; }
+.notification-warning .notification-message { color: #856404; }
+.notification-info .notification-message { color: #0c5460; }
+
+.notification-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.notification-close:hover {
+    opacity: 1;
+    background: rgba(0,0,0,0.1);
+}
+
+.notification-progress {
+    height: 3px;
+    background: rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.notification-progress-bar {
+    height: 100%;
+    background: currentColor;
+    animation: progressBar 5s linear;
+    opacity: 0.7;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes progressBar {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+.notification.removing {
+    animation: slideOutRight 0.3s ease-in forwards;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .notification-container {
+        left: 20px;
+        right: 20px;
+        max-width: none;
+    }
+    
+    .notification {
+        margin-bottom: 10px;
+    }
+    
+    .notification-content {
+        padding: 14px 16px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .notification {
+        box-shadow: 0 0 0 2px currentColor;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .notification {
+        animation: none;
+    }
+    
+    .notification-progress-bar {
+        animation: none;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .notification {
+        background: #2d3748;
+        color: #e2e8f0;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    
+    .notification-success {
+        background: linear-gradient(135deg, #22543d 0%, #2f855a 100%);
+        border-left-color: #68d391;
+    }
+    
+    .notification-error {
+        background: linear-gradient(135deg, #742a2a 0%, #c53030 100%);
+        border-left-color: #fc8181;
+    }
+    
+    .notification-warning {
+        background: linear-gradient(135deg, #744210 0%, #d69e2e 100%);
+        border-left-color: #f6e05e;
+    }
+    
+    .notification-info {
+        background: linear-gradient(135deg, #2c5282 0%, #3182ce 100%);
+        border-left-color: #63b3ed;
+    }
+}
+</style>
+
+<script>
+// Enhanced notification system
+class NotificationManager {
+    constructor() {
+        this.container = null;
+        this.notifications = new Map();
+        this.init();
+    }
+    
+    init() {
+        // Create container if it doesn't exist
+        this.container = document.getElementById('notification-container');
+        if (!this.container) {
+            this.container = document.createElement('div');
+            this.container.id = 'notification-container';
+            this.container.className = 'notification-container';
+            document.body.appendChild(this.container);
+        }
+    }
+    
+    show(message, type = 'info', options = {}) {
+        const {
+            title,
+            duration = 5000,
+            persistent = false,
+            action,
+            id = Date.now().toString()
+        } = options;
+        
+        // Remove existing notification with same ID
+        if (this.notifications.has(id)) {
+            this.remove(id);
+        }
+        
+        const notification = this.create(message, type, title, action, id);
+        this.notifications.set(id, notification);
+        this.container.appendChild(notification);
+        
+        // Auto-remove after duration (unless persistent)
+        if (!persistent && duration > 0) {
+            setTimeout(() => this.remove(id), duration);
+        }
+        
+        return id;
+    }
+    
+    create(message, type, title, action, id) {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.dataset.id = id;
+        
+        const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-exclamation-circle',
+            warning: 'fas fa-exclamation-triangle',
+            info: 'fas fa-info-circle'
+        };
+        
+        const iconClass = icons[type] || icons.info;
+        
+        notification.innerHTML = `
+            <div class="notification-content">
+                <div class="notification-icon">
+                    <i class="${iconClass}"></i>
+                </div>
+                <div class="notification-body">
+                    ${title ? `<div class="notification-title">${title}</div>` : ''}
+                    <div class="notification-message">${message}</div>
+                    ${action ? `<div class="notification-action mt-2">${action}</div>` : ''}
+                </div>
+                <button class="notification-close" onclick="notificationManager.remove('${id}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="notification-progress">
+                <div class="notification-progress-bar"></div>
+            </div>
+        `;
+        
+        // Add click handlers for actions
+        if (action) {
+            const actionElement = notification.querySelector('.notification-action');
+            if (actionElement) {
+                actionElement.addEventListener('click', (e) => e.stopPropagation());
+            }
+        }
+        
+        return notification;
+    }
+    
+    remove(id) {
+        const notification = this.notifications.get(id);
+        if (notification) {
+            notification.classList.add('removing');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+                this.notifications.delete(id);
+            }, 300);
+        }
+    }
+    
+    clear() {
+        this.notifications.forEach((_, id) => this.remove(id));
+    }
+    
+    // Convenience methods
+    success(message, options = {}) {
+        return this.show(message, 'success', options);
+    }
+    
+    error(message, options = {}) {
+        return this.show(message, 'error', options);
+    }
+    
+    warning(message, options = {}) {
+        return this.show(message, 'warning', options);
+    }
+    
+    info(message, options = {}) {
+        return this.show(message, 'info', options);
+    }
+}
+
+// Global instance
+const notificationManager = new NotificationManager();
+
+// Legacy support for existing showNotification function
+function showNotification(message, type = 'info', options = {}) {
+    return notificationManager.show(message, type, options);
+}
+
+// Enhanced notification functions
+function showSuccessNotification(message, options = {}) {
+    return notificationManager.success(message, options);
+}
+
+function showErrorNotification(message, options = {}) {
+    return notificationManager.error(message, options);
+}
+
+function showWarningNotification(message, options = {}) {
+    return notificationManager.warning(message, options);
+}
+
+function showInfoNotification(message, options = {}) {
+    return notificationManager.info(message, options);
+}
+
+// Order-specific notifications
+function showOrderNotification(orderId, status, options = {}) {
+    const statusMessages = {
+        confirmed: 'Your order has been confirmed and is being prepared',
+        preparing: 'Your delicious food is being prepared with care',
+        out_for_delivery: 'Your order is on the way!',
+        delivered: 'Your order has been delivered. Enjoy your meal!'
+    };
+    
+    const message = statusMessages[status] || `Order status updated to: ${status}`;
+    const title = `Order ${orderId}`;
+    
+    return notificationManager.info(message, {
+        title,
+        duration: 8000,
+        action: `<a href="/customer/track_order/${orderId}" class="btn btn-sm btn-outline-primary">Track Order</a>`,
+        ...options
+    });
+}
+
+// Cart notifications
+function showCartNotification(action, itemName, options = {}) {
+    const actions = {
+        added: { message: `${itemName} added to cart`, type: 'success' },
+        removed: { message: `${itemName} removed from cart`, type: 'info' },
+        updated: { message: `Cart updated`, type: 'info' }
+    };
+    
+    const config = actions[action] || actions.updated;
+    return notificationManager.show(config.message, config.type, {
+        duration: 3000,
+        ...options
+    });
+}
+
+// Coupon notifications
+function showCouponNotification(isValid, couponCode, rewardName = '', options = {}) {
+    if (isValid) {
+        return notificationManager.success(`Coupon "${couponCode}" applied successfully!`, {
+            title: rewardName,
+            duration: 4000,
+            ...options
+        });
+    } else {
+        return notificationManager.error(`Coupon "${couponCode}" is invalid or expired`, {
+            duration: 4000,
+            ...options
+        });
+    }
+}
+
+// Spin wheel notifications
+function showSpinResultNotification(result, options = {}) {
+    if (result.effect && result.coupon_code) {
+        return notificationManager.success(`Congratulations! You won: ${result.reward_name}`, {
+            title: 'Spin Wheel Result',
+            duration: 8000,
+            action: `<strong>Coupon Code: ${result.coupon_code}</strong>`,
+            ...options
+        });
+    } else {
+        return notificationManager.info('Better luck next time!', {
+            title: 'Spin Wheel Result',
+            duration: 4000,
+            ...options
+        });
+    }
+}
+
+// Network status notifications
+function showNetworkNotification(isOnline) {
+    if (isOnline) {
+        notificationManager.success('Connection restored', {
+            duration: 3000
+        });
+    } else {
+        notificationManager.error('No internet connection', {
+            persistent: true,
+            id: 'network-offline'
+        });
+    }
+}
+
+// Listen for network status changes
+window.addEventListener('online', () => showNetworkNotification(true));
+window.addEventListener('offline', () => showNetworkNotification(false));
+
+// Export for module usage if needed
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { NotificationManager, notificationManager };
+}
+</script>

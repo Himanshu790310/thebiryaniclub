@@ -1,0 +1,546 @@
+{% extends "base.html" %}
+
+{% block title %}Spin Wheel - Win Exciting Rewards!{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 mb-3">🎁 Spin the Wheel!</h1>
+                <p class="lead text-muted">Complete your order and spin to win amazing rewards</p>
+            </div>
+
+            <!-- Spin Section -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="spin-wheel-container text-center">
+                        <!-- Order ID Input -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">Enter Your Order ID to Spin</h5>
+                            <div class="row justify-content-center">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control form-control-lg text-center" 
+                                               id="order-id-input" placeholder="BC123456" 
+                                               style="letter-spacing: 2px; font-weight: bold;">
+                                        <button class="btn btn-primary" onclick="validateOrderForSpin()">
+                                            <i class="fas fa-check"></i> Verify
+                                        </button>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle"></i> 
+                                        Only delivered orders are eligible for spin
+                                    </small>
+                                </div>
+                            </div>
+                            <div id="order-verification-status" class="mt-2"></div>
+                        </div>
+
+                        <!-- Spin Wheel -->
+                        <div id="spin-wheel-section" style="display: none;">
+                            <div class="spin-wheel" id="spin-wheel">
+                                <div class="wheel-segments">
+                                    <!-- Segments will be dynamically created -->
+                                    <div class="segment segment-1" data-reward="Free Soft Drink">
+                                        <span>🥤<br>Free<br>Drink</span>
+                                    </div>
+                                    <div class="segment segment-2" data-reward="₹20 off">
+                                        <span>💸<br>₹20<br>Off</span>
+                                    </div>
+                                    <div class="segment segment-3" data-reward="Free Veg Roll">
+                                        <span>🌯<br>Free<br>Roll</span>
+                                    </div>
+                                    <div class="segment segment-4" data-reward="Better luck next time">
+                                        <span>❌<br>Try<br>Again</span>
+                                    </div>
+                                    <div class="segment segment-5" data-reward="RARE ★ Free Chicken Biryani">
+                                        <span>🎉⭐<br>Free<br>Biryani</span>
+                                    </div>
+                                    <div class="segment segment-6" data-reward="₹50 off">
+                                        <span>🔥<br>₹50<br>Off</span>
+                                    </div>
+                                    <div class="segment segment-7" data-reward="Free Paneer Roll">
+                                        <span>🧀<br>Free<br>Paneer</span>
+                                    </div>
+                                </div>
+                                <div class="wheel-pointer"></div>
+                            </div>
+                            
+                            <button id="spin-btn" class="btn btn-warning btn-lg mt-4" onclick="spinWheel()">
+                                <i class="fas fa-gift"></i> SPIN NOW!
+                            </button>
+                            
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-star text-warning"></i> 
+                                    Each order gets one spin only!
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rewards Information -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card bg-light">
+                        <div class="card-header">
+                            <h5><i class="fas fa-gift text-warning"></i> Possible Rewards</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="reward-item text-center p-3 border rounded">
+                                        <div class="reward-emoji">🥤</div>
+                                        <h6>Free Soft Drink</h6>
+                                        <small class="text-muted">500ml chilled drink</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="reward-item text-center p-3 border rounded">
+                                        <div class="reward-emoji">💸</div>
+                                        <h6>₹20 Discount</h6>
+                                        <small class="text-muted">On your next order</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="reward-item text-center p-3 border rounded">
+                                        <div class="reward-emoji">🌯</div>
+                                        <h6>Free Veg Roll</h6>
+                                        <small class="text-muted">Fresh and delicious</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="reward-item text-center p-3 border rounded">
+                                        <div class="reward-emoji">🔥</div>
+                                        <h6>₹50 Discount</h6>
+                                        <small class="text-muted">Big savings!</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="reward-item text-center p-3 border rounded">
+                                        <div class="reward-emoji">🧀</div>
+                                        <h6>Free Paneer Roll</h6>
+                                        <small class="text-muted">Premium paneer</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="reward-item text-center p-3 border rounded bg-warning text-dark">
+                                        <div class="reward-emoji">🎉⭐</div>
+                                        <h6>RARE: Free Biryani</h6>
+                                        <small>Full chicken biryani!</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How to Play -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-question-circle text-info"></i> How to Play</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 text-center mb-3">
+                                    <div class="step-number">1</div>
+                                    <h6>Order Food</h6>
+                                    <p class="text-muted small">Place an order from our delicious menu</p>
+                                </div>
+                                <div class="col-md-3 text-center mb-3">
+                                    <div class="step-number">2</div>
+                                    <h6>Wait for Delivery</h6>
+                                    <p class="text-muted small">Enjoy your meal when it arrives</p>
+                                </div>
+                                <div class="col-md-3 text-center mb-3">
+                                    <div class="step-number">3</div>
+                                    <h6>Enter Order ID</h6>
+                                    <p class="text-muted small">Use your order ID to unlock the spin</p>
+                                </div>
+                                <div class="col-md-3 text-center mb-3">
+                                    <div class="step-number">4</div>
+                                    <h6>Spin & Win!</h6>
+                                    <p class="text-muted small">Get exciting rewards instantly</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Spin Result Modal -->
+<div class="modal fade" id="spin-result-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white text-center">
+                <h4 class="modal-title w-100">
+                    <i class="fas fa-trophy"></i> Spin Result
+                </h4>
+            </div>
+            <div class="modal-body text-center py-5">
+                <div class="result-display">
+                    <div id="result-emoji" class="result-emoji mb-3"></div>
+                    <h2 id="result-name" class="mb-3"></h2>
+                    <div id="result-description" class="mb-4"></div>
+                    <div id="coupon-code-display" class="alert alert-success" style="display: none;">
+                        <h5><i class="fas fa-ticket-alt"></i> Your Coupon Code</h5>
+                        <div class="coupon-code" id="coupon-code-text"></div>
+                        <small>Valid for 72 hours from now</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <a href="{{ url_for('customer.menu') }}" class="btn btn-primary">
+                    <i class="fas fa-utensils"></i> Order More Food
+                </a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Status Modal -->
+<div class="modal fade" id="order-status-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Order Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="order-status-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let isSpinning = false;
+let currentOrderId = null;
+
+function validateOrderForSpin() {
+    const orderIdInput = document.getElementById('order-id-input');
+    const orderId = orderIdInput.value.trim().toUpperCase();
+    
+    if (!orderId) {
+        showNotification('Please enter an order ID', 'error');
+        return;
+    }
+    
+    const statusDiv = document.getElementById('order-verification-status');
+    statusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary"></div> Verifying order...';
+    
+    fetch(`/api/order_status/${orderId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            statusDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle"></i> ${data.error}</div>`;
+            document.getElementById('spin-wheel-section').style.display = 'none';
+        } else {
+            if (data.status === 'delivered') {
+                if (data.can_use_spin) {
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> Order verified! You can spin the wheel now.
+                        </div>
+                    `;
+                    currentOrderId = orderId;
+                    document.getElementById('spin-wheel-section').style.display = 'block';
+                    orderIdInput.disabled = true;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> You have already used your spin for this order.
+                        </div>
+                    `;
+                    document.getElementById('spin-wheel-section').style.display = 'none';
+                }
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Order status: ${data.status_display}. 
+                        You can spin only after the order is delivered.
+                        <button class="btn btn-sm btn-outline-primary ms-2" onclick="trackOrder('${orderId}')">
+                            Track Order
+                        </button>
+                    </div>
+                `;
+                document.getElementById('spin-wheel-section').style.display = 'none';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        statusDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Error verifying order. Please try again.</div>`;
+    });
+}
+
+function trackOrder(orderId) {
+    fetch(`/api/order_status/${orderId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showNotification(data.error, 'error');
+            return;
+        }
+        
+        const content = `
+            <div class="order-info">
+                <h6>Order: ${data.order_id}</h6>
+                <p><strong>Status:</strong> <span class="badge bg-primary">${data.status_display}</span></p>
+                <p><strong>Customer:</strong> ${data.customer_name}</p>
+                <p><strong>Total:</strong> ₹${data.total}</p>
+                ${data.estimated_delivery ? `<p><strong>ETA:</strong> ${new Date(data.estimated_delivery).toLocaleString()}</p>` : ''}
+            </div>
+        `;
+        
+        document.getElementById('order-status-content').innerHTML = content;
+        const modal = new bootstrap.Modal(document.getElementById('order-status-modal'));
+        modal.show();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Failed to track order', 'error');
+    });
+}
+
+function spinWheel() {
+    if (isSpinning || !currentOrderId) {
+        return;
+    }
+    
+    isSpinning = true;
+    const wheel = document.getElementById('spin-wheel');
+    const spinBtn = document.getElementById('spin-btn');
+    
+    // Disable button and show loading
+    spinBtn.disabled = true;
+    spinBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Spinning...';
+    
+    fetch('/customer/spin_wheel', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ order_id: currentOrderId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Animate wheel spinning
+            const randomRotation = Math.floor(Math.random() * 360) + 1800; // At least 5 full rotations
+            wheel.style.transform = `rotate(${randomRotation}deg)`;
+            wheel.style.transition = 'transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)';
+            
+            // Show result after animation
+            setTimeout(() => {
+                showSpinResult(data.result);
+                isSpinning = false;
+                spinBtn.disabled = true;
+                spinBtn.innerHTML = '<i class="fas fa-check"></i> Spin Used';
+                spinBtn.classList.remove('btn-warning');
+                spinBtn.classList.add('btn-secondary');
+            }, 3500);
+        } else {
+            showNotification(data.error || 'Failed to spin wheel', 'error');
+            isSpinning = false;
+            spinBtn.disabled = false;
+            spinBtn.innerHTML = '<i class="fas fa-gift"></i> SPIN NOW!';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Failed to spin wheel', 'error');
+        isSpinning = false;
+        spinBtn.disabled = false;
+        spinBtn.innerHTML = '<i class="fas fa-gift"></i> SPIN NOW!';
+    });
+}
+
+function showSpinResult(result) {
+    document.getElementById('result-emoji').textContent = result.emoji;
+    document.getElementById('result-name').textContent = result.reward_name;
+    
+    let description = '';
+    const couponDisplay = document.getElementById('coupon-code-display');
+    
+    if (result.effect && result.coupon_code) {
+        if (result.effect.discount) {
+            description = `You've won ₹${result.effect.discount} discount on your next order!`;
+        } else if (result.effect.item) {
+            description = `You've won a free ${result.effect.item}!`;
+        }
+        
+        document.getElementById('coupon-code-text').textContent = result.coupon_code;
+        couponDisplay.style.display = 'block';
+    } else {
+        description = "Don't worry! Try again with your next order. Good things come to those who wait! 🍀";
+        couponDisplay.style.display = 'none';
+    }
+    
+    document.getElementById('result-description').textContent = description;
+    
+    const modal = new bootstrap.Modal(document.getElementById('spin-result-modal'));
+    modal.show();
+}
+
+// Format order ID input
+document.getElementById('order-id-input').addEventListener('input', function() {
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+});
+
+// Enter key support for order ID input
+document.getElementById('order-id-input').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        validateOrderForSpin();
+    }
+});
+</script>
+
+<style>
+.spin-wheel {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    position: relative;
+    margin: 0 auto;
+    border: 8px solid #333;
+    overflow: hidden;
+    transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.wheel-segments {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: 100% 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.segment-1 {
+    background: #4CAF50;
+    transform: rotate(0deg);
+}
+
+.segment-2 {
+    background: #FF9800;
+    transform: rotate(51.43deg);
+}
+
+.segment-3 {
+    background: #2196F3;
+    transform: rotate(102.86deg);
+}
+
+.segment-4 {
+    background: #F44336;
+    transform: rotate(154.29deg);
+}
+
+.segment-5 {
+    background: #9C27B0;
+    transform: rotate(205.71deg);
+}
+
+.segment-6 {
+    background: #FF5722;
+    transform: rotate(257.14deg);
+}
+
+.segment-7 {
+    background: #607D8B;
+    transform: rotate(308.57deg);
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 25px solid #333;
+    z-index: 10;
+}
+
+.result-emoji {
+    font-size: 5rem;
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0 auto 1rem;
+}
+
+.reward-emoji {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.coupon-code {
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    background: #fff;
+    color: #333;
+    padding: 10px;
+    border: 2px dashed #28a745;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+@media (max-width: 768px) {
+    .spin-wheel {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .segment {
+        font-size: 9px;
+    }
+    
+    .result-emoji {
+        font-size: 3rem;
+    }
+}
+</style>
+{% endblock %}

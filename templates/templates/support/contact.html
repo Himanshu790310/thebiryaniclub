@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Support - Biryani Club{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 mb-3">🎧 Customer Support</h1>
+                <p class="lead text-muted">We're here to help you 24/7</p>
+            </div>
+
+            <!-- Quick Contact Options -->
+            <div class="row mb-5">
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-success">
+                        <div class="card-body text-center">
+                            <i class="fas fa-phone text-success" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Call Us Now</h5>
+                            <p class="text-muted">Speak directly with our support team</p>
+                            <a href="tel:{{ support_phone }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-phone"></i> {{ support_phone }}
+                            </a>
+                            <small class="d-block text-muted mt-2">Available 11:00 AM - 11:00 PM</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-primary">
+                        <div class="card-body text-center">
+                            <i class="fas fa-comments text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">WhatsApp Chat</h5>
+                            <p class="text-muted">Quick support via WhatsApp</p>
+                            <a href="https://wa.me/{{ support_phone.replace(' ', '').replace('-', '') }}?text=Hello, I need help with my Biryani Club order" 
+                               target="_blank" class="btn btn-primary btn-lg">
+                                <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+                            </a>
+                            <small class="d-block text-muted mt-2">Get instant responses</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support Ticket Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-ticket-alt"></i> Create Support Ticket</h4>
+                    <small class="text-muted">For detailed issues or feedback</small>
+                </div>
+                <div class="card-body">
+                    <form id="support-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="customer_name" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="customer_name" name="customer_name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="customer_phone" class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="customer_phone" name="customer_phone" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="customer_email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="customer_email" name="customer_email">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="order_id" class="form-label">Order ID (if applicable)</label>
+                                    <input type="text" class="form-control" id="order_id" name="order_id" placeholder="BC123456">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="category" class="form-label">Issue Category *</label>
+                                    <select class="form-select" id="category" name="category" required>
+                                        <option value="">Select category...</option>
+                                        <option value="order_issue">Order Issue</option>
+                                        <option value="payment_issue">Payment Issue</option>
+                                        <option value="delivery_issue">Delivery Issue</option>
+                                        <option value="food_quality">Food Quality</option>
+                                        <option value="app_technical">App/Website Technical Issue</option>
+                                        <option value="feedback">Feedback & Suggestions</option>
+                                        <option value="refund_request">Refund Request</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="priority" class="form-label">Priority Level</label>
+                                    <select class="form-select" id="priority" name="priority">
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="urgent">Urgent</option>
+                                        <option value="low">Low</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="subject" class="form-label">Subject *</label>
+                            <input type="text" class="form-control" id="subject" name="subject" required 
+                                   placeholder="Brief description of your issue">
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="description" class="form-label">Detailed Description *</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" required
+                                      placeholder="Please provide detailed information about your issue..."></textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane"></i> Submit Support Ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="card mt-5">
+                <div class="card-header">
+                    <h4><i class="fas fa-question-circle"></i> Frequently Asked Questions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="faqAccordion">
+                        <!-- FAQ Item 1 -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq1">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse1">
+                                    <i class="fas fa-clock me-2 text-primary"></i>
+                                    How long does delivery usually take?
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Our standard delivery time is 30-45 minutes from the time your order is confirmed. 
+                                    During peak hours or bad weather, delivery might take a bit longer. You'll receive 
+                                    real-time updates about your order status.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 2 -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse2">
+                                    <i class="fas fa-credit-card me-2 text-success"></i>
+                                    What payment methods do you accept?
+                                </button>
+                            </h2>
+                            <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We accept Cash on Delivery (COD) and UPI payments. For UPI payments, you can pay to 
+                                    our UPI ID: {{ upi_id or '7903102794-2@ybl' }}. Share the payment screenshot with 
+                                    our delivery person for confirmation.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 3 -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse3">
+                                    <i class="fas fa-gift me-2 text-warning"></i>
+                                    How does the spin wheel work?
+                                </button>
+                            </h2>
+                            <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    After your order is delivered, you can use your order ID to spin our reward wheel once. 
+                                    You might win discount coupons, free items, or other exciting rewards! Each order gets 
+                                    one spin only.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 4 -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq4">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse4">
+                                    <i class="fas fa-undo me-2 text-danger"></i>
+                                    What is your refund policy?
+                                </button>
+                            </h2>
+                            <div id="collapse4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We offer full refunds for orders that are significantly delayed, damaged, or incorrect. 
+                                    For food quality issues, we provide refunds or replacements on a case-by-case basis. 
+                                    Contact our support team within 24 hours of delivery for refund requests.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 5 -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq5">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse5">
+                                    <i class="fas fa-map-marker-alt me-2 text-info"></i>
+                                    Do you deliver to my area?
+                                </button>
+                            </h2>
+                            <div id="collapse5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We currently deliver within a 10km radius of our kitchen. During checkout, if your 
+                                    address is outside our delivery zone, you'll be notified. We're constantly expanding 
+                                    our delivery areas, so check back soon if we don't deliver to you yet!
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 6 -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq6">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse6">
+                                    <i class="fas fa-edit me-2 text-secondary"></i>
+                                    Can I modify or cancel my order?
+                                </button>
+                            </h2>
+                            <div id="collapse6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    You can modify or cancel your order within 5 minutes of placing it, and only if it 
+                                    hasn't been confirmed by our kitchen. After that, modifications are not possible. 
+                                    Call our support number immediately if you need to make changes.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="row mt-5">
+                <div class="col-md-4">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="fas fa-phone text-success" style="font-size: 2rem;"></i>
+                            <h6 class="mt-3">Phone Support</h6>
+                            <p class="text-muted">{{ support_phone }}</p>
+                            <small>11:00 AM - 11:00 PM</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="fas fa-envelope text-primary" style="font-size: 2rem;"></i>
+                            <h6 class="mt-3">Email Support</h6>
+                            <p class="text-muted">support@biryaniclub.com</p>
+                            <small>24-48 hour response</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="fab fa-whatsapp text-success" style="font-size: 2rem;"></i>
+                            <h6 class="mt-3">WhatsApp</h6>
+                            <p class="text-muted">{{ support_phone }}</p>
+                            <small>Instant messaging</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="ticket-success-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-check-circle"></i> Support Ticket Created</h5>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-ticket-alt text-success" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">Thank You!</h4>
+                <p class="mb-3">Your support ticket has been created successfully.</p>
+                <div class="alert alert-info">
+                    <strong>Ticket ID:</strong> <span id="ticket-id-display"></span>
+                </div>
+                <p class="text-muted">
+                    Our support team will contact you within 24 hours. 
+                    You can also call us at {{ support_phone }} for immediate assistance.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    Got it!
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const supportForm = document.getElementById('support-form');
+    
+    supportForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        submitSupportTicket();
+    });
+    
+    // Auto-format phone number
+    document.getElementById('customer_phone').addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 10);
+    });
+    
+    // Auto-format order ID
+    document.getElementById('order_id').addEventListener('input', function() {
+        this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    });
+});
+
+function submitSupportTicket() {
+    const form = document.getElementById('support-form');
+    const formData = new FormData(form);
+    
+    // Validate required fields
+    const requiredFields = ['customer_name', 'customer_phone', 'category', 'subject', 'description'];
+    for (let field of requiredFields) {
+        if (!formData.get(field)) {
+            showNotification(`Please fill in ${field.replace('_', ' ')}`, 'error');
+            document.querySelector(`[name="${field}"]`).focus();
+            return;
+        }
+    }
+    
+    // Validate phone number
+    const phone = formData.get('customer_phone');
+    if (!/^[0-9]{10}$/.test(phone)) {
+        showNotification('Please enter a valid 10-digit phone number', 'error');
+        document.querySelector('[name="customer_phone"]').focus();
+        return;
+    }
+    
+    const ticketData = {
+        customer_name: formData.get('customer_name'),
+        customer_phone: formData.get('customer_phone'),
+        customer_email: formData.get('customer_email'),
+        order_id: formData.get('order_id'),
+        category: formData.get('category'),
+        subject: formData.get('subject'),
+        description: formData.get('description')
+    };
+    
+    showLoading();
+    
+    fetch('/support/create_ticket', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(ticketData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            // Show success modal
+            document.getElementById('ticket-id-display').textContent = data.ticket_id;
+            const modal = new bootstrap.Modal(document.getElementById('ticket-success-modal'));
+            modal.show();
+            
+            // Reset form
+            form.reset();
+        } else {
+            showNotification(data.error || 'Failed to create support ticket', 'error');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        console.error('Error:', error);
+        showNotification('Failed to create support ticket. Please try again.', 'error');
+    });
+}
+
+// Auto-populate order ID if available in URL params
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('order_id');
+    if (orderId) {
+        document.getElementById('order_id').value = orderId;
+        document.getElementById('category').value = 'order_issue';
+    }
+});
+
+// Smart subject suggestions based on category
+document.getElementById('category').addEventListener('change', function() {
+    const subjectInput = document.getElementById('subject');
+    const suggestions = {
+        'order_issue': 'Issue with my order',
+        'payment_issue': 'Payment problem',
+        'delivery_issue': 'Delivery was delayed/problematic',
+        'food_quality': 'Food quality concern',
+        'app_technical': 'Website/app not working properly',
+        'feedback': 'Feedback about my experience',
+        'refund_request': 'Request for refund',
+        'other': 'Other issue'
+    };
+    
+    if (suggestions[this.value] && !subjectInput.value) {
+        subjectInput.value = suggestions[this.value];
+    }
+});
+</script>
+{% endblock %}
